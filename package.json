@@ -1,8 +1,12 @@
 {
   "name": "pdf-to-csv-dashboard",
   "version": "1.0.0",
-  "description": "Dashboard Node.js pour extraire des donn\u00e9es PDF vers CSV avec Claude AI",
+  "description": "Dashboard Node.js pour extraire des données PDF vers CSV avec Claude AI",
   "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
@@ -23,7 +27,7 @@
     "pdf-parse": "^1.1.1",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.3.1",
-    "anthropic": "^0.10.0",
+    "@anthropic-ai/sdk": "^0.20.0",
     "cors": "^2.8.5"
   },
   "devDependencies": {
