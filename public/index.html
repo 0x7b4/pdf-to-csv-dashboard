@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to CSV Dashboard - Powered by Claude AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 10px 5px 0;
+        }
+
+        .badge-ai {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-node {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+
+        .upload-zone.dragover {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .upload-zone h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .upload-zone p {
+            color: #666;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .result {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: #ecfdf5;
+            border: 2px solid #10b981;
+        }
+
+        .result h3 {
+            color: #10b981;
+            margin-bottom: 15px;
+        }
+
+        .result-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #d1fae5;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item strong {
+            color: #059669;
+        }
+
+        .error {
+            display: none;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: #fee2e2;
+            border: 2px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .files-list {
+            margin-top: 30px;
+        }
+
+        .files-list h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .file-item {
+            background: #f8f9ff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .file-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .main-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📄 PDF to CSV Dashboard</h1>
+            <p>Extraction intelligente de données avec Claude AI</p>
+            <div>
+                <span class="badge badge-ai">🤖 Claude 3.5 Sonnet</span>
+                <span class="badge badge-node">⚡ Node.js</span>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">📤</div>
+                <h3>Glissez-déposez votre fichier PDF</h3>
+                <p>ou cliquez pour sélectionner un fichier</p>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #999;">
+                    Taille max: 10 MB
+                </p>
+            </div>
+
+            <input type="file" id="fileInput" accept=".pdf">
+
+            <!-- Progress -->
+            <div class="progress" id="progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill">0%</div>
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="result" id="result">
+                <h3>✅ Conversion réussie !</h3>
+                <div class="result-item">
+                    <strong>Fichier original:</strong> <span id="originalFile"></span>
+                </div>
+                <div class="result-item">
+                    <strong>Lignes extraites:</strong> <span id="rowCount"></span>
+                </div>
+                <div class="result-item">
+                    <strong>Colonnes:</strong> <span id="columnCount"></span>
+                </div>
+                <div class="result-item">
+                    <strong>Fichier CSV:</strong> <span id="csvFile"></span>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" id="downloadBtn">
+                        💾 Télécharger le CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div class="error" id="error"></div>
+
+            <!-- Files List -->
+            <div class="files-list">
+                <h3>📁 Fichiers convertis récemment</h3>
+                <div id="filesList"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>🤖 Powered by Claude AI & Node.js</p>
+            <p style="margin-top: 10px; opacity: 0.8;">
+                Created by 0x7b4 • Open Source
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const progress = document.getElementById('progress');
+        const progressFill = document.getElementById('progressFill');
+        const result = document.getElementById('result');
+        const error = document.getElementById('error');
+        const filesList = document.getElementById('filesList');
+
+        let downloadUrl = '';
+
+        // Click sur la zone d'upload
+        uploadZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Sélection de fichier
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag & Drop
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        // Gérer la sélection de fichier
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            if (file.type !== 'application/pdf') {
+                showError('Veuillez sélectionner un fichier PDF');
+                return;
+            }
+
+            uploadFile(file);
+        }
+
+        // Upload et conversion
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('pdfFile', file);
+
+            hideMessages();
+            showProgress();
+
+            try {
+                const response = await fetch('/api/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Erreur de conversion');
+                }
+
+                hideProgress();
+                showResult(data);
+                loadFiles();
+
+            } catch (err) {
+                hideProgress();
+                showError(err.message);
+            }
+        }
+
+        // Afficher le résultat
+        function showResult(data) {
+            document.getElementById('originalFile').textContent = data.metadata.originalFile;
+            document.getElementById('rowCount').textContent = data.metadata.rowsExtracted;
+            document.getElementById('columnCount').textContent = data.metadata.columnsExtracted;
+            document.getElementById('csvFile').textContent = data.csvFile;
+
+            downloadUrl = data.downloadUrl;
+            result.style.display = 'block';
+        }
+
+        // Télécharger le fichier
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if (downloadUrl) {
+                window.location.href = downloadUrl;
+            }
+        });
+
+        // Gérer l'affichage
+        function showProgress() {
+            progress.style.display = 'block';
+            let width = 0;
+            const interval = setInterval(() => {
+                if (width >= 90) {
+                    clearInterval(interval);
+                } else {
+                    width += 10;
+                    progressFill.style.width = width + '%';
+                    progressFill.textContent = width + '%';
+                }
+            }, 200);
+        }
+
+        function hideProgress() {
+            progress.style.display = 'none';
+            progressFill.style.width = '0%';
+        }
+
+        function showError(message) {
+            error.textContent = '❌ ' + message;
+            error.style.display = 'block';
+        }
+
+        function hideMessages() {
+            result.style.display = 'none';
+            error.style.display = 'none';
+        }
+
+        // Charger la liste des fichiers
+        async function loadFiles() {
+            try {
+                const response = await fetch('/api/files');
+                const data = await response.json();
+
+                if (data.files && data.files.length > 0) {
+                    filesList.innerHTML = data.files.slice(0, 5).map(file => `
+                        <div class="file-item">
+                            <div class="file-info">
+                                <div class="file-name">📄 ${file.filename}</div>
+                                <div class="file-meta">
+                                    ${formatFileSize(file.size)} • 
+                                    ${formatDate(file.created)}
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="window.location.href='${file.downloadUrl}'">
+                                ⬇️
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    filesList.innerHTML = '<p style="color: #666; text-align: center;">Aucun fichier converti pour le moment</p>';
+                }
+            } catch (err) {
+                console.error('Erreur de chargement des fichiers:', err);
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function formatDate(date) {
+            return new Date(date).toLocaleString('fr-FR', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Charger au démarrage
+        loadFiles();
+
+        // Vérifier la santé du serveur
+        fetch('/api/health')
+            .then(r => r.json())
+            .then(data => {
+                if (!data.claudeConfigured) {
+                    showError('⚠️ Clé API Claude non configurée. Consultez le README.');
+                }
+            })
+            .catch(() => {
+                showError('❌ Impossible de se connecter au serveur');
+            });
+    </script>
+</body>
+</html>
